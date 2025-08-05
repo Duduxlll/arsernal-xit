@@ -1,6 +1,6 @@
--- Sistema Arsenal Completo (Aimbot, TriggerBot, WallCheck, FOV, GUI funcional)
-if getgenv().ArsenalModLoaded then return end
-getgenv().ArsenalModLoaded = true
+-- Sistema Counter Blox Completo (Aimbot, TriggerBot, WallCheck, FOV, GUI funcional)
+if getgenv().CounterBloxModLoaded then return end
+getgenv().CounterBloxModLoaded = true
 
 -- Serviços
 local Players = game:GetService("Players")
@@ -18,7 +18,7 @@ local FOVRadius = 130
 
 -- Desenhar FOV
 local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(0, 255, 0)
+FOVCircle.Color = Color3.fromRGB(255, 0, 0)
 FOVCircle.Thickness = 1
 FOVCircle.Radius = FOVRadius
 FOVCircle.Visible = ShowFOV
@@ -27,7 +27,7 @@ FOVCircle.Filled = false
 
 -- GUI Bonita
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "ArsenalModGUI"
+gui.Name = "CounterBloxModGUI"
 
 local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 270, 0, 320)
@@ -40,7 +40,7 @@ Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "🔫 Arsenal Hack Menu"
+title.Text = "🎯 Counter Blox Hack Menu"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
