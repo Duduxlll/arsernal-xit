@@ -1,120 +1,130 @@
--- COUNTER BLOX XIT - GUI COMPLETA COM AIMBOT, TRIGGERBOT, FOV, ETC
-if getgenv().CounterBloxModLoaded then return end
-getgenv().CounterBloxModLoaded = true
+-- Script Arsenal: Aimbot, TriggerBot, FOV, WallCheck + GUI Bonita
 
--- Serviços Roblox
+-- Proteção de ambiente
+if getgenv().ArsenalMod then return end
+getgenv().ArsenalMod = true
+
+-- Serviços
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
 
--- Variáveis principais
-local Aimbot = false
-local TriggerBot = false
-local WallCheck = true
-local ShowFOV = true
-local FOVRadius = 130
-
--- Criar FOV visual
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Color = Color3.fromRGB(255, 255, 0)
-FOVCircle.Thickness = 2
-FOVCircle.Radius = FOVRadius
-FOVCircle.Visible = ShowFOV
-FOVCircle.Transparency = 0.6
-FOVCircle.Filled = false
+-- Variáveis
+local AimbotEnabled = false
+local TriggerBotEnabled = false
+local WallCheckEnabled = true
+local FOVRadius = 100
+local FOVCircle
+local Target
 
 -- Criar GUI
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "CounterBloxModGUI"
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "ArsenalModGui"
 
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 280, 0, 330)
-frame.Position = UDim2.new(0, 100, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.Active = true
-frame.Draggable = true
-frame.BorderSizePixel = 0
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 240, 0, 220)
+Frame.Position = UDim2.new(0, 100, 0, 100)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
 
-local title = Instance.new("TextLabel", frame)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Text = "🔥 Counter Blox Hack Menu"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.BackgroundTransparency = 1
-title.Font = Enum.Font.GothamBold
-title.TextSize = 20
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 10)
 
--- Função para criar botão com feedback visual
-local function criarBotao(nome, posY, callback)
-	local botao = Instance.new("TextButton", frame)
-	botao.Size = UDim2.new(0, 230, 0, 40)
-	botao.Position = UDim2.new(0, 25, 0, posY)
-	botao.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-	botao.TextColor3 = Color3.fromRGB(255, 255, 255)
-	botao.Font = Enum.Font.GothamBold
-	botao.TextSize = 16
-	botao.Text = nome .. ": OFF"
-	Instance.new("UICorner", botao).CornerRadius = UDim.new(0, 6)
+-- Função para criar botões
+local function criarBotao(texto, posY, callback)
+	local Botao = Instance.new("TextButton", Frame)
+	Botao.Size = UDim2.new(0, 200, 0, 30)
+	Botao.Position = UDim2.new(0, 20, 0, posY)
+	Botao.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Botao.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Botao.Text = texto
+	Botao.Font = Enum.Font.GothamBold
+	Botao.TextSize = 14
+	Botao.MouseButton1Click:Connect(callback)
 
-	local ativo = false
-	botao.MouseButton1Click:Connect(function()
-		ativo = not ativo
-		botao.Text = nome .. ": " .. (ativo and "ON" or "OFF")
-		botao.BackgroundColor3 = ativo and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
-		callback(ativo)
-	end)
+	local corner = Instance.new("UICorner", Botao)
+	corner.CornerRadius = UDim.new(0, 6)
+
+	return Botao
 end
 
--- Criar botões
-criarBotao("Aimbot", 60, function(v) Aimbot = v end)
-criarBotao("TriggerBot", 110, function(v) TriggerBot = v end)
-criarBotao("WallCheck", 160, function(v) WallCheck = v end)
-criarBotao("Mostrar FOV", 210, function(v)
-	ShowFOV = v
-	FOVCircle.Visible = v
+-- Botões
+criarBotao("Aimbot: ON/OFF", 20, function()
+	AimbotEnabled = not AimbotEnabled
 end)
 
--- Função: encontrar inimigo mais próximo no FOV
-local function getClosestEnemy()
-	local closest, dist = nil, math.huge
-	for _, player in ipairs(Players:GetPlayers()) do
+criarBotao("TriggerBot: ON/OFF", 60, function()
+	TriggerBotEnabled = not TriggerBotEnabled
+end)
+
+criarBotao("WallCheck: ON/OFF", 100, function()
+	WallCheckEnabled = not WallCheckEnabled
+end)
+
+criarBotao("Mostrar FOV: ON/OFF", 140, function()
+	if FOVCircle then
+		FOVCircle:Remove()
+		FOVCircle = nil
+	else
+		FOVCircle = Drawing.new("Circle")
+		FOVCircle.Position = UIS:GetMouseLocation()
+		FOVCircle.Color = Color3.fromRGB(255, 255, 255)
+		FOVCircle.Radius = FOVRadius
+		FOVCircle.Visible = true
+		FOVCircle.Thickness = 1
+		FOVCircle.Transparency = 0.7
+	end
+end)
+
+-- Função para encontrar o inimigo mais próximo
+local function getClosestPlayer()
+	local closestPlayer, closestDistance = nil, math.huge
+	for _, player in pairs(Players:GetPlayers()) do
 		if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character and player.Character:FindFirstChild("Head") then
 			local head = player.Character.Head
-			local screenPos, visible = Camera:WorldToScreenPoint(head.Position)
-			local mouse = UIS:GetMouseLocation()
-			local diff = (Vector2.new(screenPos.X, screenPos.Y) - mouse).Magnitude
-			if visible and diff < FOVRadius and diff < dist then
-				if WallCheck then
-					local ray = workspace:Raycast(Camera.CFrame.Position, (head.Position - Camera.CFrame.Position).Unit * 1000, {LocalPlayer.Character})
-					if ray and ray.Instance and ray.Instance:IsDescendantOf(player.Character) then
-						closest, dist = player, diff
+			local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(head.Position)
+			if onScreen then
+				local mousePos = UIS:GetMouseLocation()
+				local dist = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
+				if dist < FOVRadius and dist < closestDistance then
+					if WallCheckEnabled then
+						local ray = workspace:Raycast(workspace.CurrentCamera.CFrame.Position, (head.Position - workspace.CurrentCamera.CFrame.Position).Unit * 500, {LocalPlayer.Character})
+						if ray and ray.Instance and ray.Instance:IsDescendantOf(player.Character) then
+							closestPlayer = player
+							closestDistance = dist
+						end
+					else
+						closestPlayer = player
+						closestDistance = dist
 					end
-				else
-					closest, dist = player, diff
 				end
 			end
 		end
 	end
-	return closest
+	return closestPlayer
 end
 
--- Loop principal
+-- Aimbot Loop
 RunService.RenderStepped:Connect(function()
+	if AimbotEnabled then
+		Target = getClosestPlayer()
+		if Target and Target.Character and Target.Character:FindFirstChild("Head") then
+			local headPos = Target.Character.Head.Position
+			workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, headPos)
+		end
+	end
+
 	if FOVCircle then
 		FOVCircle.Position = UIS:GetMouseLocation()
 	end
+end)
 
-	local target = getClosestEnemy()
-
-	if Aimbot and target and target.Character and target.Character:FindFirstChild("Head") then
-		local head = target.Character.Head.Position
-		Camera.CFrame = CFrame.new(Camera.CFrame.Position, head)
-	end
-
-	if TriggerBot and target then
+-- TriggerBot Loop
+RunService.RenderStepped:Connect(function()
+	if TriggerBotEnabled and Target and UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) == false then
 		mouse1click()
 	end
 end)
-
