@@ -1,6 +1,3 @@
--- COUNTER BLOX ULTIMATE MOD by ChatGPT for Vitor
--- Aimbot com FOV ajustável, TriggerBot, WallCheck, AORHACK (ESP), Pain Assist e GUI completa
-
 if getgenv().CBloxMod then return end
 getgenv().CBloxMod = true
 
@@ -16,7 +13,7 @@ local TriggerBotEnabled = false
 local WallCheckEnabled = true
 local ESPEnabled = false
 local FOVRadius = 120
-local AimbotStrength = 5 -- 1 (forte) a 10 (fraco)
+local AimbotStrength = 5
 
 local ESP_Boxes = {}
 local FOVCircle = nil
@@ -40,7 +37,7 @@ UIList.FillDirection = Enum.FillDirection.Vertical
 UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIList.VerticalAlignment = Enum.VerticalAlignment.Top
 
--- Util: criar botão
+-- Função: criar botão
 local function createButton(text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 230, 0, 30)
@@ -54,7 +51,7 @@ local function createButton(text, callback)
     return btn
 end
 
--- Util: slider
+-- Função: criar slider
 local function createSlider(title, min, max, default, callback)
     local container = Instance.new("Frame")
     container.Size = UDim2.new(0, 230, 0, 40)
@@ -94,13 +91,16 @@ local function createSlider(title, min, max, default, callback)
     return container
 end
 
--- Adicionar botões e sliders
-Frame:AddChild(createButton("Aimbot: ON/OFF", function() AimbotEnabled = not AimbotEnabled end))
-Frame:AddChild(createButton("TriggerBot: ON/OFF", function() TriggerBotEnabled = not TriggerBotEnabled end))
-Frame:AddChild(createButton("WallCheck: ON/OFF", function() WallCheckEnabled = not WallCheckEnabled end))
-Frame:AddChild(createButton("AORHACK (ESP): ON/OFF", function() ESPEnabled = not ESPEnabled end))
-Frame:AddChild(createButton("Mostrar FOV: ON/OFF", function()
-    if FOVCircle then FOVCircle:Remove() FOVCircle = nil else
+-- ✅ BOTÕES (corrigido com .Parent)
+createButton("Aimbot: ON/OFF", function() AimbotEnabled = not AimbotEnabled end).Parent = Frame
+createButton("TriggerBot: ON/OFF", function() TriggerBotEnabled = not TriggerBotEnabled end).Parent = Frame
+createButton("WallCheck: ON/OFF", function() WallCheckEnabled = not WallCheckEnabled end).Parent = Frame
+createButton("AORHACK (ESP): ON/OFF", function() ESPEnabled = not ESPEnabled end).Parent = Frame
+createButton("Mostrar FOV: ON/OFF", function()
+    if FOVCircle then
+        FOVCircle:Remove()
+        FOVCircle = nil
+    else
         FOVCircle = Drawing.new("Circle")
         FOVCircle.Color = Color3.new(1, 1, 1)
         FOVCircle.Thickness = 1
@@ -109,11 +109,19 @@ Frame:AddChild(createButton("Mostrar FOV: ON/OFF", function()
         FOVCircle.Visible = true
         FOVCircle.Radius = FOVRadius
     end
-end))
-Frame:AddChild(createSlider("FOV", 50, 300, FOVRadius, function(v) FOVRadius = v if FOVCircle then FOVCircle.Radius = v end end))
-Frame:AddChild(createSlider("Aimbot Força", 1, 10, AimbotStrength, function(v) AimbotStrength = v end))
+end).Parent = Frame
 
--- Util: inimigo mais próximo
+-- ✅ SLIDERS (com .Parent)
+createSlider("FOV", 50, 300, FOVRadius, function(v)
+    FOVRadius = v
+    if FOVCircle then FOVCircle.Radius = v end
+end).Parent = Frame
+
+createSlider("Aimbot Força", 1, 10, AimbotStrength, function(v)
+    AimbotStrength = v
+end).Parent = Frame
+
+-- Função: inimigo mais próximo
 local function getClosest()
     local closest, dist = nil, math.huge
     for _, p in pairs(Players:GetPlayers()) do
@@ -138,7 +146,7 @@ local function getClosest()
     return closest
 end
 
--- ESP loop
+-- ESP / AORHACK
 RunService.RenderStepped:Connect(function()
     if ESPEnabled then
         for _, b in pairs(ESP_Boxes) do b:Remove() end
@@ -166,21 +174,21 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Aimbot + Trigger loop
+-- Aimbot e Trigger
 RunService.RenderStepped:Connect(function()
     if FOVCircle then FOVCircle.Position = UIS:GetMouseLocation() end
+
     if AimbotEnabled then
         Target = getClosest()
         if Target and Target.Character and Target.Character:FindFirstChild("Head") then
             local pos = Target.Character.Head.Position
-            local dir = (pos - Camera.CFrame.Position).Unit
             Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, pos), 0.1 * (11 - AimbotStrength))
         end
     else
         Target = nil
     end
+
     if TriggerBotEnabled and Target then
         mouse1click()
     end
 end)
-
